@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:lang="http://www.springframework.org/schema/lang"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+         http://www.springframework.org/schema/context
+		 http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		 http://www.springframework.org/schema/tx
+		 http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+         http://www.springframework.org/schema/aop
+         http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+         http://www.springframework.org/schema/lang
+     	 http://www.springframework.org/schema/lang/spring-lang-4.0.xsd
+         http://www.springframework.org/schema/task 
+         http://www.springframework.org/schema/task/spring-task-4.0.xsd">
+
+	
+	<context:component-scan base-package="com.niiwoo*" />
+
+	<!-- 配置数据源 -->
+	<bean name="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="url" value="${druid-url}" />
+		<!-- <property name="connectionProperties" value="config.decrypt=true" 
+			/> -->
+		<property name="username" value="${druid-username}" />
+		<property name="password" value="${druid-password}" />
+
+		<!-- 初始化连接大小 -->
+		<property name="initialSize" value="${druid-initialSize}" />
+		<!-- 连接池最大使用连接数量 -->
+		<property name="maxActive" value="${druid-maxActive}" />
+		<!-- 连接池最大空闲 -->
+		<!-- <property name="maxIdle" value="32" /> -->
+		<!-- 连接池最小空闲 -->
+		<property name="minIdle" value="${druid-minIdle}" />
+		<!-- 获取连接最大等待时间 -->
+		<property name="maxWait" value="${druid-maxWait}" />
+		<property name="validationQuery" value="${druid-validationQuery}" />
+		<property name="testOnBorrow" value="${druid-testOnBorrow}" />
+		<property name="testOnReturn" value="${druid-testOnReturn}" />
+		<property name="testWhileIdle" value="${druid-testWhileIdle}" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${druid-timeBetweenEvictionRunsMillis}" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${druid-minEvictableIdleTimeMillis}" />
+		<!-- 打开removeAbandoned功能 -->
+		<property name="removeAbandoned" value="${druid-removeAbandoned}" />
+		<!-- 1800秒，也就是30分钟 -->
+		<property name="removeAbandonedTimeout" value="${druid-removeAbandonedTimeout}" />
+		<!-- 关闭abanded连接时输出错误日志 -->
+		<property name="logAbandoned" value="${druid-logAbandoned}" />
+		<!-- 监控数据库 -->
+		<!-- <property name="filters" value="stat" /> -->
+		<property name="filters" value="${druid-filters}" />
+		<property name="connectionProperties"
+			value="config.decrypt=true;config.decrypt.key=${druid-publickey}" />
+
+	</bean>
+	<!-- mybatis sessionFactoryBean -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations" value="classpath*:com/hhdw/mapper/**/*.xml" />
+		<property name="typeAliasesPackage" value="com.hhdw.model" />
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+	</bean>
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+		<constructor-arg index="1" value="REUSE" />
+	</bean>
+	<!-- 使用MapperScannerConfigurer以*.xml和接口的方式动态生成接口的实现类 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.hhdw.mapper" />
+		<property name="annotationClass" value="org.springframework.stereotype.Repository" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+		<property name="sqlSessionTemplateBeanName" value="sqlSessionTemplate" />
+	</bean>
+
+	<!-- 定义事务管理器 -->
+	<!-- 事务管理 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager"
+		proxy-target-class="true" order="0" />
+
+	<!-- 声明式事物 -->
+	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="find*" propagation="NOT_SUPPORTED"
+				read-only="true" rollback-for="Exception" />
+			<tx:method name="get*" propagation="NOT_SUPPORTED"
+				read-only="true" rollback-for="Exception" />
+			<tx:method name="query*" propagation="NOT_SUPPORTED"
+				read-only="true" rollback-for="Exception" />
+			<tx:method name="select*" propagation="NOT_SUPPORTED"
+				read-only="true" rollback-for="Exception" />
+			<tx:method name="list*" propagation="NOT_SUPPORTED"
+				read-only="true" rollback-for="Exception" />
+			<tx:method name="insert*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="save*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="add*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="create*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="delete*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="update*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="modify*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="edit*" propagation="REQUIRED"
+				rollback-for="Exception" />
+			<tx:method name="*" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<aop:pointcut id="transactionPointcut"
+			expression="execution(* com.hhdw.services..*.*(..))" />
+		<aop:advisor pointcut-ref="transactionPointcut"
+			advice-ref="transactionAdvice" order="1" />
+	</aop:config>
+	
+</beans>    

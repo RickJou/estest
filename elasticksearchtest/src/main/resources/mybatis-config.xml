@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<settings>
+		<setting name="logImpl" value="LOG4J" />
+
+		<setting name="useGeneratedKeys" value="true" />
+		<setting name="defaultExecutorType" value="REUSE" />
+		<!-- 全局启用或禁用延迟加载。当禁用时，所有关联对象都会即时加载。 -->
+		<setting name="lazyLoadingEnabled" value="false" />
+		<setting name="aggressiveLazyLoading" value="true" />
+	</settings>
+	<!-- 
+	<plugins>
+		<plugin interceptor="com.hhdw.common.mybatis.BizMapInterceptor"/>  
+		<plugin interceptor="com.hhdw.common.plugin.PagePlugin">
+			<property name="dialect" value="mysql" />
+			<property name="pageSqlId" value=".*listPage.*" />
+		</plugin>
+	</plugins>
+    -->
+    
+</configuration>
